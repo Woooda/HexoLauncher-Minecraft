@@ -74,7 +74,7 @@ class MainWindow(QMainWindow):
 
         self.centralwidget = QWidget(self)
 
-        self.logo_path = "C:/Users/Eldreamer/Desktop/hexolauncher/assets/minecraft_logo.png"
+        self.logo_path = "./assets/minecraft_logo.png"
         self.logo = QLabel(self.centralwidget)
         self.logo.setAlignment(Qt.AlignCenter)
         self.set_logo_icon(self.logo_path)
