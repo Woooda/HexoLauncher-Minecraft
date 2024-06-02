@@ -33,7 +33,7 @@ HexoLauncher - это кастомный лаунчер для Minecraft, соз
 
 1. **Клонируйте репозиторий**:
    ```bash
-   git clone https://github.com/yourusername/hexolauncher.git
+   git clone (https://github.com/Woooda/HexoLauncher-Minecraft
    cd hexolauncher
    ```
 
