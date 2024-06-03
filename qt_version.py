@@ -10,13 +10,13 @@ import coloredlogs
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QLineEdit, QMainWindow,
-                             QPushButton, QRadioButton, QVBoxLayout, QWidget,
-                             QLabel, QListWidget, QProgressBar, QMessageBox, QComboBox)
+ QPushButton, QRadioButton, QVBoxLayout, QWidget,
+ QLabel, QListWidget, QProgressBar, QMessageBox, QComboBox)
 
 try:
-    from minecraft_launcher_lib.command import get_minecraft_command
-    from minecraft_launcher_lib.install import install_minecraft_version
-    from minecraft_launcher_lib.utils import get_minecraft_directory, get_version_list
+ from minecraft_launcher_lib.command import get_minecraft_command
+ from minecraft_launcher_lib.install import install_minecraft_version
+ from minecraft_launcher_lib.utils import get_minecraft_directory, get_version_list
 except ImportError as e:
     logging.error(f"Missing required module: {e}. Please ensure minecraft_launcher_lib is installed.")
     exit(1)
@@ -50,6 +50,9 @@ minecraft_directory = get_minecraft_directory().replace('minecraft', 'hexolaunch
 config_file = os.path.join(minecraft_directory, 'launcher_config.json')
 logo_path = os.path.join(os.path.dirname(__file__), 'assets', 'minecraft_logo.png')
 
+# Создать директорию для конфигурации, если она не существует
+os.makedirs(minecraft_directory, exist_ok=True)
+
 def load_config():
     if os.path.exists(config_file):
         with open(config_file, 'r') as file:
@@ -57,6 +60,10 @@ def load_config():
     return {}
 
 def save_config(config):
+    # Создать директорию, если она не существует
+    os.makedirs(os.path.dirname(config_file), exist_ok=True)
+    
+    # Сохранить конфигурацию в файл
     with open(config_file, 'w') as file:
         json.dump(config, file, indent=4)
 
@@ -140,7 +147,9 @@ class LaunchThread(QThread):
 
         # Install Minecraft version
         try:
+            logging.debug("Installing Minecraft version")
             install_minecraft_version(versionid=self.version_id, minecraft_directory=self.minecraft_folder, callback={ 'setStatus': self.update_progress_label, 'setProgress': self.update_progress, 'setMax': self.update_progress_max })
+            logging.debug("Minecraft version installed successfully")
         except Exception as e:
             logging.error(f"Error installing Minecraft version: {e}")
             self.state_update_signal.emit(False)
@@ -165,12 +174,14 @@ class LaunchThread(QThread):
         }
 
         minecraft_command = get_minecraft_command(version=self.version_id, minecraft_directory=self.minecraft_folder, options=options)
+        logging.debug(f"Generated Minecraft command: {' '.join(minecraft_command)}")
 
         try:
             # Save the command to a batch file to avoid long command line issues
             command_file = os.path.join(self.minecraft_folder, 'launch_minecraft.bat')
             with open(command_file, 'w') as file:
                 file.write(' '.join(minecraft_command))
+            logging.info('Launching Minecraft')
             subprocess.Popen(command_file, shell=True)
             logging.info('Minecraft launched successfully')
         except Exception as e:
